@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie lahko uvozi recepte iz Recipe Keeper. Izvozi svoje recepte v .zip formatu, nato spodaj naloži .zip datoteko."
+    },
+    "cookn": {
+      "description-long": "Meanie lahko uvozi recepte iz DVO Cook'n X3. \nIzvozite kuharsko knjigo ali meni v obliki \"Cook'n\", preimenujte razširitev izvoza v .zip in nato naložite spodaj .zip.",
+      "title": "Dvo cook'n x3"
     }
   },
   "new-recipe": {

@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "Oraganizator de rețete",
       "description-long": "Mealie poate importa rețete din \"Recipe Keeper\". Exportă rețetele tale în format ZIP, apoi încarcă fișierul .zip mai jos."
+    },
+    "cookn": {
+      "description-long": "Mealie poate importa rețete de la DVO Cook'n X3. \nExportați o carte de bucate sau un meniu în formatul „Cook'n”, redenumiți extensia de export în .zip, apoi încărcați .zip de mai jos.",
+      "title": "DVO Cook'n X3"
     }
   },
   "new-recipe": {

@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "레시피 보관함",
       "description-long": "Mealie는 Recipe Keeper에서 레시피를 가져올 수 있습니다. 레시피를 zip 형식으로 내보낸 다음 아래의 .zip 파일을 업로드하세요."
+    },
+    "cookn": {
+      "description-long": "Sealie는 DVO Cook'n X3에서 레시피를 수입 할 수 있습니다. \nCookbook 또는 메뉴를 \"Cook'n\"형식으로 내보내고 내보내기 확장자 이름을 .zip로 바꾸고 아래 .zip을 업로드하십시오.",
+      "title": "DVO Cook'n X3"
     }
   },
   "new-recipe": {
