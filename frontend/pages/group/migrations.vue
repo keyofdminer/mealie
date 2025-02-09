@@ -84,6 +84,7 @@ const MIGRATIONS = {
   plantoeat: "plantoeat",
   recipekeeper: "recipekeeper",
   tandoor: "tandoor",
+  cookn: "cookn"
 };
 
 export default defineComponent({
@@ -139,6 +140,10 @@ export default defineComponent({
       {
         text: i18n.tc("migration.tandoor.title"),
         value: MIGRATIONS.tandoor,
+      },
+      {
+        text: i18n.tc("migration.cookn.title"),
+        value: MIGRATIONS.cookn,
       },
     ];
     const _content = {
@@ -368,6 +373,35 @@ export default defineComponent({
                   { id: 10, name: "recipe.json", icon: $globals.icons.codeJson },
                 ]
               }
+            ]
+          }
+        ],
+      },
+      [MIGRATIONS.cookn]: {
+        text: i18n.tc("migration.cookn.description-long"),
+        acceptedFileType: ".zip",
+        tree: [
+          {
+            id: 1,
+            icon: $globals.icons.zip,
+            name: "cookn.zip",
+            children: [
+              { id: 2, name: "temp_brand.dsv", icon: $globals.icons.codeJson },
+              { id: 3, name: "temp_chapter_desc.dsv", icon: $globals.icons.codeJson },
+              { id: 4, name: "temp_chapter.dsv", icon: $globals.icons.codeJson },
+              { id: 5, name: "temp_cookBook_desc.dsv", icon: $globals.icons.codeJson },
+              { id: 6, name: "temp_cookBook.dsv", icon: $globals.icons.codeJson },
+              { id: 7, name: "temp_food_brand.dsv", icon: $globals.icons.codeJson },
+              { id: 8, name: "temp_food_group.dsv", icon: $globals.icons.codeJson },
+              { id: 9, name: "temp_food.dsv", icon: $globals.icons.codeJson },
+              { id: 10, name: "temp_ingrediant.dsv", icon: $globals.icons.codeJson },
+              { id: 11, name: "temp_media.dsv", icon: $globals.icons.codeJson },
+              { id: 12, name: "temp_nutrient.dsv", icon: $globals.icons.codeJson },
+              { id: 13, name: "temp_recipe_desc.dsv", icon: $globals.icons.codeJson },
+              { id: 13, name: "temp_recipe.dsv", icon: $globals.icons.codeJson },
+              { id: 13, name: "temp_unit_equivalent.dsv", icon: $globals.icons.codeJson },
+              { id: 13, name: "temp_unit.dsv", icon: $globals.icons.codeJson },
+              { id: 13, name: "images", icon: $globals.icons.fileImage },
             ]
           }
         ],

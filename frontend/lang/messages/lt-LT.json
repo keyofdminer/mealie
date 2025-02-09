@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie can import recipes from Recipe Keeper. Export your recipes in zip format, then upload the .zip file below."
+    },
+    "cookn": {
+      "description-long": "Maitinimas gali importuoti receptus iš „DVO Cook'n X3“. \nEksportuokite kulinarijos knygą ar meniu „Cook'n“ formatu, pervardykite eksporto plėtinį į .zip, tada įkelkite .zip žemiau.",
+      "title": "DVO Cook'n x3"
     }
   },
   "new-recipe": {

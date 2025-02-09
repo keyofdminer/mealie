@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "A Mealie képes recepteket importálni a Recipe Keeperből. Exportálja a receptjeit zip formátumban, majd töltse fel a .zip fájlt az oldal alján."
+    },
+    "cookn": {
+      "description-long": "A Mealie recepteket importálhat a DVO Cook'n X3 -ból. \nExportáljon szakácskönyvet vagy menüt a \"Cook'n\" formátumban, nevezze át az export kiterjesztést .zip -re, majd töltse fel az alábbi .zip -t.",
+      "title": "Dvo cook'n x3"
     }
   },
   "new-recipe": {

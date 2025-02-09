@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Meali kan importere oppskrifter fra Recipe Keeper. Eksporter oppskrifter i zip-format, og last deretter opp .zip-filen nedenfor."
+    },
+    "cookn": {
+      "description-long": "Mealie kan importere oppskrifter fra DVO Cook'n X3. \nEksporter en kokebok eller meny i \"Cook'n\" -formatet, gi nytt navn til eksportforlengelsen til .zip, og last deretter opp .zip nedenfor.",
+      "title": "DVO Cook'n x3"
     }
   },
   "new-recipe": {

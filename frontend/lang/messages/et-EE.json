@@ -419,6 +419,10 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie saab importida retsepte Recipe Keeper-st. Ekspordi oma retsept .zip formaadis ning lae .zip fail allolevasse kasti."
+    },
+    "cookn": {
+      "description-long": "Söögikord saab importida retsepte DVO Cook'n X3 -st. \nEksportige kokaraamat või menüü \"Cook'n\" vormingus, nimetage ekspordi laiend ümber .zip, seejärel laadige .zip üles allpool.",
+      "title": "Dvo Cook'n x3"
     }
   },
   "new-recipe": {
