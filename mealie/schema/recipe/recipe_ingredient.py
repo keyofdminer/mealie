@@ -348,6 +348,7 @@ class ParsedIngredient(MealieModel):
 
 class RegisteredParser(str, enum.Enum):
     nlp = "nlp"
+    nlp_v2 = "nlp_v2"
     brute = "brute"
     openai = "openai"
 
