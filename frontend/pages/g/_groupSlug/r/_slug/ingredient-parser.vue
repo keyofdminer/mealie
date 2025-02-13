@@ -163,6 +163,10 @@ export default defineComponent({
           "value": "nlp",
         },
         {
+        "text": i18n.tc("recipe.parser.natural-language-processor-v2"),
+          "value": "nlp_v2",
+        },
+        {
           "text": i18n.tc("recipe.parser.brute-parser"),
           "value": "brute",
         },

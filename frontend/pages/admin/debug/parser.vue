@@ -12,6 +12,7 @@
       <div class="d-flex align-center justify-center justify-md-start flex-wrap">
         <v-btn-toggle v-model="parser" dense mandatory @change="processIngredient">
           <v-btn value="nlp"> {{ $t('admin.nlp') }} </v-btn>
+          <v-btn value="nlp_v2"> {{ $t('admin.nlp_v2') }} </v-btn>
           <v-btn value="brute"> {{ $t('admin.brute') }} </v-btn>
           <v-btn value="openai"> {{ $t('admin.openai') }} </v-btn>
         </v-btn-toggle>

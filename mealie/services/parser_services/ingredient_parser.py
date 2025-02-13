@@ -105,7 +105,7 @@ class NLPParserV2(ABCIngredientParser):
     @staticmethod
     def _extract_amount(ingredient: IngredientParserParsedIngredient) -> IngredientAmount:
         if not (ingredient_amounts := ingredient.amount):
-            return IngredientAmount(quantity=0, unit="", text="", confidence=0)
+            return IngredientAmount(quantity=0, quantity_max=0, unit="", text="", confidence=0, starting_index=-1)
 
         ingredient_amount = ingredient_amounts[0]
         if isinstance(ingredient_amount, CompositeIngredientAmount):
