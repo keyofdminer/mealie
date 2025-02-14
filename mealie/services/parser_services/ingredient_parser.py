@@ -176,7 +176,7 @@ class NLPParserV2(ABCIngredientParser):
         if note:
             confidences.append(note_conf)
 
-        return ParsedIngredient(
+        parsed_ingredient = ParsedIngredient(
             input=ingredient.sentence,
             confidence=IngredientConfidence(
                 average=(sum(confidences) / len(confidences)) if confidences else 0,
@@ -194,6 +194,8 @@ class NLPParserV2(ABCIngredientParser):
                 note=note,
             ),
         )
+
+        return self.find_ingredient_match(parsed_ingredient)
 
     async def parse_one(self, ingredient_string: str) -> ParsedIngredient:
         parsed_ingredient = parse_ingredient(ingredient_string)
