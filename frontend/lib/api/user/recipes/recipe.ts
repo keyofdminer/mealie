@@ -19,7 +19,7 @@ import {
 } from "~/lib/api/types/recipe";
 import { ApiRequestInstance, PaginationData } from "~/lib/api/types/non-generated";
 
-export type Parser = "nlp" | "nlp_v2" | "brute" | "openai";
+export type Parser = "nlp" | "brute" | "openai";
 
 export interface CreateAsset {
   name: string;

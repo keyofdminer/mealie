@@ -1,5 +1,3 @@
-from fractions import Fraction
-
 from ingredient_parser import parse_ingredient
 from ingredient_parser.dataclasses import CompositeIngredientAmount, IngredientAmount
 from ingredient_parser.dataclasses import ParsedIngredient as IngredientParserParsedIngredient
@@ -9,7 +7,6 @@ from sqlalchemy.orm import Session
 from mealie.core.root_logger import get_logger
 from mealie.schema.recipe import RecipeIngredient
 from mealie.schema.recipe.recipe_ingredient import (
-    MAX_INGREDIENT_DENOMINATOR,
     CreateIngredientFood,
     CreateIngredientUnit,
     IngredientConfidence,
@@ -17,7 +14,7 @@ from mealie.schema.recipe.recipe_ingredient import (
     RegisteredParser,
 )
 
-from . import brute, crfpp, openai
+from . import brute, openai
 from ._base import ABCIngredientParser
 from .parser_utils import extract_quantity_from_string
 
@@ -50,54 +47,6 @@ class BruteForceParser(ABCIngredientParser):
 
 
 class NLPParser(ABCIngredientParser):
-    """
-    Class for CRFPP ingredient parsers.
-    """
-
-    def _crf_to_ingredient(self, crf_model: crfpp.CRFIngredient) -> ParsedIngredient:
-        ingredient = None
-
-        try:
-            ingredient = RecipeIngredient(
-                title="",
-                note=crf_model.comment,
-                unit=CreateIngredientUnit(name=crf_model.unit),
-                food=CreateIngredientFood(name=crf_model.name),
-                disable_amount=False,
-                quantity=float(
-                    sum(Fraction(s).limit_denominator(MAX_INGREDIENT_DENOMINATOR) for s in crf_model.qty.split())
-                ),
-            )
-        except Exception as e:
-            logger.error(f"Failed to parse ingredient: {crf_model}: {e}")
-            # TODO: Capture some sort of state for the user to see that an exception occurred
-            ingredient = RecipeIngredient(
-                title="",
-                note=crf_model.input,
-            )
-
-        parsed_ingredient = ParsedIngredient(
-            input=crf_model.input,
-            ingredient=ingredient,
-            confidence=IngredientConfidence(
-                quantity=crf_model.confidence.qty,
-                food=crf_model.confidence.name,
-                **crf_model.confidence.model_dump(),
-            ),
-        )
-
-        return self.find_ingredient_match(parsed_ingredient)
-
-    async def parse(self, ingredients: list[str]) -> list[ParsedIngredient]:
-        crf_models = crfpp.convert_list_to_crf_model(ingredients)
-        return [self._crf_to_ingredient(crf_model) for crf_model in crf_models]
-
-    async def parse_one(self, ingredient_string: str) -> ParsedIngredient:
-        items = await self.parse([ingredient_string])
-        return items[0]
-
-
-class NLPParserV2(ABCIngredientParser):
     """
     Class for Ingredient Parser library
     """
@@ -207,7 +156,6 @@ class NLPParserV2(ABCIngredientParser):
 
 __registrar: dict[RegisteredParser, type[ABCIngredientParser]] = {
     RegisteredParser.nlp: NLPParser,
-    RegisteredParser.nlp_v2: NLPParserV2,
     RegisteredParser.brute: BruteForceParser,
     RegisteredParser.openai: openai.OpenAIParser,
 }

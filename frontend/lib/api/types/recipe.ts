@@ -6,7 +6,7 @@
 */
 
 export type ExportTypes = "json";
-export type RegisteredParser = "nlp" | "nlp_v2" | "brute" | "openai";
+export type RegisteredParser = "nlp" | "brute" | "openai";
 export type OrderByNullPosition = "first" | "last";
 export type OrderDirection = "asc" | "desc";
 export type TimelineEventType = "system" | "info" | "comment";
