@@ -13,6 +13,16 @@ nlp_test_ingredients = [
     TestIngredient("⅓ cup panko bread crumbs", 0.333, "cup", "panko bread crumbs", ""),
     TestIngredient("1/8 cup all-purpose flour", 0.125, "cup", "all-purpose flour", ""),
     TestIngredient("1/32 cup all-purpose flour", 0.031, "cup", "all-purpose flour", ""),
+    TestIngredient("1 1/2 cups chopped onion ", 1.5, "cup", "onion", "chopped"),
+    TestIngredient(
+        "2 pounds russet potatoes, peeled, and cut into 3/4-inch cubes  ",
+        2,
+        "pound",
+        "russet potatoes",
+        "peeled, and cut into 3/4 inch cubes",
+    ),
+    TestIngredient("2 tablespoons (30ml) vegetable oil ", 2, "tablespoon", "vegetable oil", ""),
+    TestIngredient("2 teaspoons salt (to taste) ", 2, "teaspoon", "salt", "to taste"),
 ]
 
 
