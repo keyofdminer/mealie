@@ -25,6 +25,7 @@ def _format_time(minutes: int) -> str:
 
 
 def convert_to_float(value):
+    """Converts a string to float. String can include fractions and mixed fractions."""
     try:
         value = value.strip()  # Remove any surrounding spaces
         if value == "":
@@ -80,6 +81,7 @@ class DSVParser:
         return results
 
     def get_data(self, row, column):
+        """Get column data from row. Handles a few bad data cases."""
         data = row.get(column, "")
         if data is None or data == "[null]":
             data = ""
@@ -104,6 +106,7 @@ class CooknMigrator(BaseMigrator):
         self.matcher = DataMatcher(self.db)
 
     def _parse_units_table(self, db):
+        """Parses the Cook'n units table and adds missing units to Mealie DB."""
         _units_table = db.get_table("temp_unit")
         for _unit_row in _units_table:
             if int(db.get_data(_unit_row, "FREQUENCY")) > 0:
@@ -126,6 +129,7 @@ class CooknMigrator(BaseMigrator):
                         self.logger.error(e)
 
     def _parse_foods_table(self, db):
+        """Parses the Cook'n food table and adds missing foods to Mealie DB."""
         _foods_table = db.get_table("temp_food")
         for _food_row in _foods_table:
             if int(db.get_data(_food_row, "FREQUENCY")) > 0:
@@ -143,6 +147,7 @@ class CooknMigrator(BaseMigrator):
                         self.logger.error(e)
 
     def _parse_media(self, _cookbook_id, _chapter_id, _recipe_id, db):
+        """Checks recipe, chapter, and cookbook for images. Return path to most specific available image."""
         _media_recipe_row = db.query_by_id("temp_media", "ENTITY_ID", [_recipe_id], return_first_only=True)
         _media_chapter_row = db.query_by_id("temp_media", "ENTITY_ID", [_chapter_id], return_first_only=True)
         _media_cookbook_row = db.query_by_id("temp_media", "ENTITY_ID", [_cookbook_id], return_first_only=True)
@@ -179,7 +184,7 @@ class CooknMigrator(BaseMigrator):
         return None
 
     def _parse_ingrediants(self, _recipe_id, db):
-        # Parse ingrediants
+        """Parses ingrediants for recipe from Cook'n ingrediants table."""
         ingredients = []
         ingrediants_order = []
         _ingrediant_rows = db.query_by_id("temp_ingredient", "PARENT_ID", [_recipe_id])
@@ -288,6 +293,7 @@ class CooknMigrator(BaseMigrator):
         return steps
 
     def _process_recipe_document(self, _recipe_row, db) -> dict:
+        """Parses recipe row from the Cook'n recipe table."""
         recipe_data = {}
 
         # Select db values
@@ -331,6 +337,7 @@ class CooknMigrator(BaseMigrator):
         return recipe_data
 
     def _process_cookbook(self, path):
+        """Processes contents of a zip file."""
         source_dir = self.get_zip_base_path(path)
         db = DSVParser(source_dir)
         # Load units and foods from Cook'n
@@ -368,6 +375,7 @@ class CooknMigrator(BaseMigrator):
                         import_image(r.image, recipe_id)
 
     def _migrate(self) -> None:
+        """Migrates recipes from Cook'n cookboop .zip. Also will handle a .zip folder of .zip folders"""
         with tempfile.TemporaryDirectory() as tmpdir:
             with zipfile.ZipFile(self.archive) as zip_file:
                 zip_file.extractall(tmpdir)
