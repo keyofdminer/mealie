@@ -195,6 +195,7 @@ class CooknMigrator(BaseMigrator):
             unit_name = db.get_data(_unit_row, "NAME")
             food_name = db.get_data(_food_row, "NAME")
 
+            # Match unit and food from Mealie DB
             unit = self.matcher.find_unit_match(unit_name)
             if unit == "":
                 unit = None
@@ -202,10 +203,11 @@ class CooknMigrator(BaseMigrator):
             if food == "":
                 food = None
 
-            pre_qualifier = db.get_data(_ingrediant_row, "PRE_QUALIFIER").rstrip()
-            post_qualifier = db.get_data(_ingrediant_row, "POST_QUALIFIER").rstrip()
+            pre_qualifier = db.get_data(_ingrediant_row, "PRE_QUALIFIER").lstrip().rstrip()
+            post_qualifier = db.get_data(_ingrediant_row, "POST_QUALIFIER").lstrip().rstrip()
             brand = db.get_data(_brand_row, "NAME")
 
+            # Combine pre-qualifier and post-qualifier into single note
             note = ""
             if pre_qualifier != "":
                 if pre_qualifier[-1] == ",":
@@ -216,6 +218,8 @@ class CooknMigrator(BaseMigrator):
                     note += ", "
                 if post_qualifier[-1] == ",":
                     post_qualifier = post_qualifier[:-1]
+                if pre_qualifier[0] == ",":
+                    post_qualifier = post_qualifier[1:].lstrip()
                 note += post_qualifier
 
             base_ingredient = RecipeIngredient(
@@ -329,23 +333,26 @@ class CooknMigrator(BaseMigrator):
     def _process_cookbook(self, path):
         source_dir = self.get_zip_base_path(path)
         db = DSVParser(source_dir)
+        # Load units and foods from Cook'n
         self._parse_units_table(db)
         self._parse_foods_table(db)
-        # Reload matcher with updated tables
+        # Reload DataMatcher with updated tables
         self.matcher = DataMatcher(self.db)
 
+        # Load recipes from cookn
         _recipe_table = db.get_table("temp_recipe")
         recipes_as_dicts = [self._process_recipe_document(_recipe_row, db) for _recipe_row in _recipe_table]
 
         recipes = []
         for r in recipes_as_dicts:
+            # Clean recipes and re-add ingrediant w/ amounts
             ingrediants = r["ingrediants"]
             r = self.clean_recipe_dictionary(r)
             r.recipe_ingredient = ingrediants
             recipes.append(r)
 
+        # add recipes and images to database
         results = self.import_recipes_to_database(recipes)
-        # If I use the slugs from the results rather than the recipe lookup, I can properly import images
         recipe_lookup = {r.slug: r for r in recipes}
         for slug, recipe_id, status in results:
             if status:
