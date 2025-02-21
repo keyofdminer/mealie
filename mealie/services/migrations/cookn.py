@@ -223,7 +223,7 @@ class CooknMigrator(BaseMigrator):
                     note += ", "
                 if post_qualifier[-1] == ",":
                     post_qualifier = post_qualifier[:-1]
-                if pre_qualifier[0] == ",":
+                if post_qualifier[0] == ",":
                     post_qualifier = post_qualifier[1:].lstrip()
                 note += post_qualifier
 
@@ -255,7 +255,7 @@ class CooknMigrator(BaseMigrator):
 
         lines = instructions.splitlines()
         steps = []
-        current_step = []
+        current_step: list[str] = []
 
         for line in lines:
             line = line.strip()
@@ -294,7 +294,7 @@ class CooknMigrator(BaseMigrator):
 
     def _process_recipe_document(self, _recipe_row, db) -> dict:
         """Parses recipe row from the Cook'n recipe table."""
-        recipe_data = {}
+        recipe_data: dict[str, str | list[str | RecipeIngredient]] = {}
 
         # Select db values
         _recipe_id = db.get_data(_recipe_row, "ID")
