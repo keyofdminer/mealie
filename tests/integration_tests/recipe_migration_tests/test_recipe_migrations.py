@@ -111,7 +111,7 @@ test_cases = [
     MigrationTestData(
         typ=SupportedMigrations.cookn,
         archive=test_data.migrations_cookn,
-        search_slug="zucchini-bread",
+        search_slug="fresh-fruit-pizza",
         nutrition_entries=set(),
     ),
 ]
