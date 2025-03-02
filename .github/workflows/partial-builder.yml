@@ -36,26 +36,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: depot/setup-action@v1
-
       - name: Retrieve Python package
         uses: actions/download-artifact@v4
         with:
           name: backend-dist
           path: dist
 
-      - name: Build and push Docker image, via Depot.dev
-        uses: depot/build-push-action@v1
-        with:
-          project: srzjb6mhzm
-          file: ./docker/Dockerfile
-          context: .
-          build-contexts: |
-            packages=dist
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ inputs.tag }}
-            ${{ inputs.tags }}
-          build-args: |
-            COMMIT=${{ github.sha }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --build-arg COMMIT=${{ github.sha }} \
+            --file ./docker/Dockerfile \
+            --tag ghcr.io/${{ github.repository }}:${{ inputs.tag }} \
+            --push .
