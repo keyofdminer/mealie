@@ -103,7 +103,7 @@ class CooknMigrator(BaseMigrator):
         super().__init__(**kwargs)
         self.name = "cookn"
         self.key_aliases = []
-        self.matcher = DataMatcher(self.db)
+        self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
 
     def _parse_units_table(self, db):
         """Parses the Cook'n units table and adds missing units to Mealie DB."""
@@ -114,6 +114,11 @@ class CooknMigrator(BaseMigrator):
                 plural_name = db.get_data(_unit_row, "PLURAL_NAME")
                 abbreviation = db.get_data(_unit_row, "ABBREVIATION")
 
+                # exact match
+                if name in self.matcher.units_by_alias:
+                    continue
+
+                # fuzzy match
                 match = self.matcher.find_unit_match(name)
                 if match is None:
                     save = SaveIngredientUnit(
@@ -122,11 +127,14 @@ class CooknMigrator(BaseMigrator):
                         plural_name=plural_name,
                         abbreviation=abbreviation,
                     )
-
+                    # update DataMatcher
+                    self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
                     try:
                         self.db.ingredient_units.create(save)
                     except Exception as e:
                         self.logger.error(e)
+                else:
+                    self.logger.info("Fuzzy match for unit (%s -> %s)", name, match.name)
 
     def _parse_foods_table(self, db):
         """Parses the Cook'n food table and adds missing foods to Mealie DB."""
@@ -136,15 +144,23 @@ class CooknMigrator(BaseMigrator):
                 name = db.get_data(_food_row, "NAME")
                 plural_name = db.get_data(_food_row, "PLURAL_NAME")
 
+                # exact match
+                if name in self.matcher.foods_by_alias:
+                    continue
+
                 match = self.matcher.find_food_match(name)
                 if match is None:
                     save = SaveIngredientFood(
                         group_id=self.group.id, name=name, plural_name=plural_name, description=""
                     )
+                    # update DataMatcher
+                    self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
                     try:
                         self.db.ingredient_foods.create(save)
                     except Exception as e:
                         self.logger.error(e)
+                else:
+                    self.logger.info("Fuzzy match for food (%s -> %s)", name, match.name)
 
     def _parse_media(self, _cookbook_id, _chapter_id, _recipe_id, db):
         """Checks recipe, chapter, and cookbook for images. Return path to most specific available image."""
@@ -344,7 +360,7 @@ class CooknMigrator(BaseMigrator):
         self._parse_units_table(db)
         self._parse_foods_table(db)
         # Reload DataMatcher with updated tables
-        self.matcher = DataMatcher(self.db)
+        self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
 
         # Load recipes from cookn
         _recipe_table = db.get_table("temp_recipe")
