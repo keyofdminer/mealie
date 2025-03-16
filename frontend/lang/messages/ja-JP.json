@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "MealieはRecipe Keeperからレシピをインポートできます。レシピをzip形式でエクスポートし、以下に.zipファイルをアップロードしてください。"
-    },
-    "cookn": {
-      "description-long": "MealieはDVO Cook'n X3からレシピをインポートできます。 \n「cook'n」形式でクックブックまたはメニューをエクスポートし、エクスポート拡張子の名前を.zipに変更してから、.zipを下にアップロードします。",
-      "title": "dvo cook'n x3"
     }
   },
   "new-recipe": {

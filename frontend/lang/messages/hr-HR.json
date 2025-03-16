@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie can import recipes from Recipe Keeper. Export your recipes in zip format, then upload the .zip file below."
-    },
-    "cookn": {
-      "description-long": "Obloge može uvesti recepte iz DVO Cook'n X3. \nIzvezite kuharsku knjigu ili izbornik u formatu \"Cook'n\", preimenujte ekstenziju izvoza u .zip, a zatim prenesite .zip u nastavku.",
-      "title": "Dvo kuhar x3"
     }
   },
   "new-recipe": {

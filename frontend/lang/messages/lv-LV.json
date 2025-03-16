@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recepšu turētājs",
       "description-long": "Mealie var importēt receptes no Recipe Keeper. Eksportējiet savas receptes zip formātā, pēc tam augšupielādējiet zemāk esošo.zip failu."
-    },
-    "cookn": {
-      "description-long": "Mealie var importēt receptes no DVO Cook'n X3. \nEksportējiet pavārgrāmatu vai izvēlni formātā \"Cook'n\", pārdēvējiet eksporta paplašinājumu uz .zip, pēc tam augšupielādējiet zemāk esošo .zip.",
-      "title": "DVO Cook'n X3"
     }
   },
   "new-recipe": {

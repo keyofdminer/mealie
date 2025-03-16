@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "שומר המתכון",
       "description-long": "Mealie יכולה לייבא מתכונים מ-Recipe Keeper. יש לייצא את המתכונים בפורמט zip ולהעלות אותו כאן."
-    },
-    "cookn": {
-      "description-long": "SELEI יכול לייבא מתכונים מ- DVO COOK'N X3. \nייצא ספר בישול או תפריט בפורמט \"Cook'n\", שנה את שם סיומת הייצוא ל- .zip, ואז העלה את ה- .zip למטה.",
-      "title": "DVO COOK'N X3"
     }
   },
   "new-recipe": {

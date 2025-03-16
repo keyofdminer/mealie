@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie může importovat recepty z Recipe Keeper. Exportujte recepty v zip formátu, poté nahrajte .zip soubor níže."
-    },
-    "cookn": {
-      "description-long": "Mearie může importovat recepty z DVO Cook'n X3. \nExportujte kuchařku nebo nabídku ve formátu „Cook'n“, přejmenujte rozšíření exportu na .zip a poté nahrajte níže uvedený .ZIP.",
-      "title": "Dvo Cook'n X3"
     }
   },
   "new-recipe": {

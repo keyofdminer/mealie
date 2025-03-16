@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "مدير الوصفة",
       "description-long": "Mealie can import recipes from Recipe Keeper. Export your recipes in zip format, then upload the .zip file below."
-    },
-    "cookn": {
-      "description-long": "يمكن لوجبة الاستيراد وصفات من DVO Cook'n X3. \nقم بتصدير كتاب طبخ أو قائمة بتنسيق \"cook'n\" ، وقم بإعادة تسمية امتداد التصدير إلى .zip ، ثم قم بتحميل .zip أدناه.",
-      "title": "DVO Cook'n x3"
     }
   },
   "new-recipe": {

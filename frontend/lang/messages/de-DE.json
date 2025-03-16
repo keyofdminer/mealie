@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie kann Rezepte von Recipe Keeper importieren. Exportiere deine Rezepte im ZIP-Format und lade dann unten die .zip Datei hoch.\n"
-    },
-    "cookn": {
-      "description-long": "Mahlzeit kann Rezepte von DVO Cook'n x3 importieren. \nExportieren Sie ein Kochbuch oder Menü im Format \"Cook'n\", benennen Sie die Export -Erweiterung in .zip um und laden Sie den unten stehenden .zip hoch.",
-      "title": "DVO Cook'n x3"
     }
   },
   "new-recipe": {

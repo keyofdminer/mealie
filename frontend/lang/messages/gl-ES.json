@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Garda Receitas",
       "description-long": "Mealie pode importar receitas do Garda Receitas. Exporta as túas receitas en formato zip e, a continuación, carga o ficheiro .zip abaixo."
-    },
-    "cookn": {
-      "description-long": "A comida pode importar receitas de DVO Cook'n X3. \nExportar un libro de receitas ou menú no formato \"Cook'n\", cambiar o nome da extensión de exportación a .zip e logo cargar o .zip a continuación.",
-      "title": "DVO Cook'n x3"
     }
   },
   "new-recipe": {
