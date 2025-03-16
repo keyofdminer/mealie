@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie kan importera recept från Recept Keeper. Exportera dina recept i zip-format, ladda sedan upp .zip-filen här under."
-    },
-    "cookn": {
-      "description-long": "Mealie kan importera recept från DVO Cook'n X3. \nExportera en kokbok eller meny i formatet \"Cook'n\", byta namn på exportförlängningen till .zip och ladda sedan upp .zip nedan.",
-      "title": "Dvo Cook'n x3"
     }
   },
   "new-recipe": {

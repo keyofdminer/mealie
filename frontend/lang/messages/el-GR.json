@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Το Mealie μπορεί να εισάγει συνταγές από το Recipe Keeper. Εξάγετε τις συνταγές σας σε μορφή zip, στη συνέχεια, ανεβάστε το αρχείο .zip παρακάτω."
-    },
-    "cookn": {
-      "description-long": "Το Mealie μπορεί να εισάγει συνταγές από το DVO Cook'n X3. \nΕξαγωγή βιβλίου μαγειρικής ή μενού στη μορφή \"Cook'n\", μετονομάστε την επέκταση εξαγωγής σε .zip και στη συνέχεια μεταφορτώστε το .zip παρακάτω.",
-      "title": "Dvo cook'n x3"
     }
   },
   "new-recipe": {

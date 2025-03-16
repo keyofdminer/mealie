@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Reseptinsäilyttäjä",
       "description-long": "Mealieen voi tuoda reseptejä reseptinsäilyttäjästä. Tuo reseptit zip-muodossa ja sitten lataa zip-tiedosto alempaa."
-    },
-    "cookn": {
-      "description-long": "Mearie voi tuoda reseptejä DVO Cook'n X3: lta. \nVie keittokirja tai -valikko \"Cook'n\" -muodossa, nimeä vienti laajennus .zipiksi ja lataa sitten alla oleva .zip.",
-      "title": "DVO Cook'n x3"
     }
   },
   "new-recipe": {

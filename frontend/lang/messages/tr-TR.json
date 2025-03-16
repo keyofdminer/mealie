@@ -419,10 +419,6 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie tarifleri Recipe Keeper'dan içe aktarabilir. Tariflerinizi zip formatında dışa aktarın, daha sonra .zip dosyasını aşağıdan yükleyin."
-    },
-    "cookn": {
-      "description-long": "Mealie, DVO Cook'n X3'ten tarifleri içe aktarabilir. \n\"Cook'n\" biçiminde bir yemek kitabı veya menüsü dışa aktarın, dışa aktarma uzantısını .zip'e yeniden adlandırın, ardından aşağıdaki .zip'i yükleyin.",
-      "title": "Dvo Cook'n x3"
     }
   },
   "new-recipe": {
