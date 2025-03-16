@@ -1,6 +1,6 @@
 {
   "name": "mealie",
-"version": "2.7.1",
+"version": "keyofd",
   "private": true,
   "scripts": {
     "dev": "nuxt",
