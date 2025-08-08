@@ -31,7 +31,6 @@ export interface RecipeSettings {
   showAssets?: boolean;
   landscapeView?: boolean;
   disableComments?: boolean;
-  disableAmount?: boolean;
   locked?: boolean;
 }
 export interface AssignTags {
@@ -212,8 +211,6 @@ export interface RecipeIngredient {
   unit?: IngredientUnit | CreateIngredientUnit | null;
   food?: IngredientFood | CreateIngredientFood | null;
   note?: string | null;
-  isFood?: boolean | null;
-  disableAmount?: boolean;
   display?: string;
   title?: string | null;
   originalText?: string | null;
@@ -226,7 +223,7 @@ export interface Recipe {
   groupId?: string;
   name?: string | null;
   slug?: string;
-  image?: unknown;
+  image?: string;
   recipeServings?: number;
   recipeYieldQuantity?: number;
   recipeYield?: string | null;
@@ -347,8 +344,6 @@ export interface RecipeIngredientBase {
   unit?: IngredientUnit | CreateIngredientUnit | null;
   food?: IngredientFood | CreateIngredientFood | null;
   note?: string | null;
-  isFood?: boolean | null;
-  disableAmount?: boolean | null;
   display?: string;
 }
 export interface RecipeLastMade {
@@ -512,7 +507,7 @@ export interface ScrapeRecipeTest {
   url: string;
   useOpenAI?: boolean;
 }
-export interface SlugResponse {}
+export interface SlugResponse { }
 export interface TagIn {
   name: string;
 }

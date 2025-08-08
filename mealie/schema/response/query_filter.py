@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections import deque
 from enum import Enum
-from typing import Any, TypeVar, cast
+from typing import Any, cast
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -18,8 +18,6 @@ from mealie.db.models._model_base import SqlAlchemyBase
 from mealie.db.models._model_utils.datetime import NaiveDateTime
 from mealie.db.models._model_utils.guid import GUID
 from mealie.schema._mealie.mealie_model import MealieModel
-
-Model = TypeVar("Model", bound=SqlAlchemyBase)
 
 
 class RelationalKeyword(Enum):
@@ -173,12 +171,15 @@ class QueryFilterBuilderComponent:
         if not isinstance(self.value, list):
             sanitized_values = [self.value]
         else:
-            sanitized_values = self.value
+            sanitized_values = list(self.value)
 
         for i, v in enumerate(sanitized_values):
             # always allow querying for null values
             if v is None:
                 continue
+
+            if isinstance(model_attr_type, sqltypes.String):
+                sanitized_values[i] = v.lower()
 
             if self.relationship is RelationalKeyword.LIKE or self.relationship is RelationalKeyword.NOT_LIKE:
                 if not isinstance(model_attr_type, sqltypes.String):
@@ -271,7 +272,7 @@ class QueryFilterBuilder:
                 return consolidated_group_builder.self_group()
 
     @classmethod
-    def get_model_and_model_attr_from_attr_string(
+    def get_model_and_model_attr_from_attr_string[Model: SqlAlchemyBase](
         cls, attr_string: str, model: type[Model], *, query: sa.Select | None = None
     ) -> tuple[SqlAlchemyBase, InstrumentedAttribute, sa.Select | None]:
         """
@@ -332,10 +333,25 @@ class QueryFilterBuilder:
 
         return current_model, model_attr, query
 
-    @staticmethod
-    def _get_filter_element(
-        component: QueryFilterBuilderComponent, model, model_attr, model_attr_type
+    @classmethod
+    def _transform_model_attr(cls, model_attr: InstrumentedAttribute, model_attr_type: Any) -> InstrumentedAttribute:
+        if isinstance(model_attr_type, sqltypes.String):
+            model_attr = sa.func.lower(model_attr)
+
+        return model_attr
+
+    @classmethod
+    def _get_filter_element[Model: SqlAlchemyBase](
+        cls,
+        query: sa.Select,
+        component: QueryFilterBuilderComponent,
+        model: type[Model],
+        model_attr: InstrumentedAttribute,
+        model_attr_type: Any,
     ) -> sa.ColumnElement:
+        original_model_attr = model_attr
+        model_attr = cls._transform_model_attr(model_attr, model_attr_type)
+
         # Keywords
         if component.relationship is RelationalKeyword.IS:
             element = model_attr.is_(component.validate(model_attr_type))
@@ -344,16 +360,22 @@ class QueryFilterBuilder:
         elif component.relationship is RelationalKeyword.IN:
             element = model_attr.in_(component.validate(model_attr_type))
         elif component.relationship is RelationalKeyword.NOT_IN:
-            element = model_attr.not_in(component.validate(model_attr_type))
+            vals = component.validate(model_attr_type)
+            if original_model_attr.parent.entity != model:
+                subq = query.with_only_columns(model.id).where(model_attr.in_(vals))
+                element = sa.not_(model.id.in_(subq))
+            else:
+                element = sa.not_(model_attr.in_(vals))
+
         elif component.relationship is RelationalKeyword.CONTAINS_ALL:
             primary_model_attr: InstrumentedAttribute = getattr(model, component.attribute_name.split(".")[0])
             element = sa.and_()
             for v in component.validate(model_attr_type):
                 element = sa.and_(element, primary_model_attr.any(model_attr == v))
         elif component.relationship is RelationalKeyword.LIKE:
-            element = model_attr.like(component.validate(model_attr_type))
+            element = model_attr.ilike(component.validate(model_attr_type))
         elif component.relationship is RelationalKeyword.NOT_LIKE:
-            element = model_attr.not_like(component.validate(model_attr_type))
+            element = model_attr.not_ilike(component.validate(model_attr_type))
 
         # Operators
         elif component.relationship is RelationalOperator.EQ:
@@ -373,7 +395,7 @@ class QueryFilterBuilder:
 
         return element
 
-    def filter_query(
+    def filter_query[Model: SqlAlchemyBase](
         self, query: sa.Select, model: type[Model], column_aliases: dict[str, sa.ColumnElement] | None = None
     ) -> sa.Select:
         """
@@ -422,7 +444,7 @@ class QueryFilterBuilder:
                 if (column_alias := column_aliases.get(base_attribute_name)) is not None:
                     model_attr = column_alias
 
-                element = self._get_filter_element(component, model, model_attr, model_attr.type)
+                element = self._get_filter_element(query, component, model, model_attr, model_attr.type)
                 partial_group.append(element)
 
         # combine the completed groups into one filter

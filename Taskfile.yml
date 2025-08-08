@@ -70,7 +70,7 @@ tasks:
   dev:generate:
     desc: run code generators
     cmds:
-      - poetry run python dev/code-generation/main.py
+      - poetry run python dev/code-generation/main.py {{ .CLI_ARGS }}
       - task: py:format
 
   dev:services:
@@ -243,7 +243,7 @@ tasks:
     desc: runs the frontend server
     dir: frontend
     cmds:
-      - yarn run dev
+      - yarn run dev --no-fork
 
   docker:build-from-package:
     desc: Builds the Docker image from the existing Python package in dist/

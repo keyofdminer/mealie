@@ -1,61 +1,66 @@
 <template>
-  <div v-if="scaledAmount" class="d-flex align-center">
-    <v-row no-gutters class="d-flex flex-wrap align-center" style="font-size: larger;">
-      <v-icon x-large left color="primary">
+  <div
+    v-if="yieldDisplay"
+    class="d-flex align-center"
+  >
+    <v-row
+      no-gutters
+      class="d-flex flex-wrap align-center"
+      style="font-size: larger;"
+    >
+      <v-icon
+        size="x-large"
+        start
+        color="primary"
+      >
         {{ $globals.icons.bread }}
       </v-icon>
-      <p class="my-0">
-        <span class="font-weight-bold">{{ $i18n.tc("recipe.yield") }}</span><br>
+      <p class="my-0 opacity-80">
+        <span class="font-weight-bold">{{ $t("recipe.yield") }}</span><br>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <span v-html="scaledAmount"></span> {{ text }}
+        <span v-html="yieldDisplay" />
       </p>
     </v-row>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed } from "@nuxtjs/composition-api";
+<script setup lang="ts">
 import DOMPurify from "dompurify";
 import { useScaledAmount } from "~/composables/recipes/use-scaled-amount";
 
-export default defineComponent({
-  props: {
-    yieldQuantity: {
-      type: Number,
-      default: 0,
-    },
-    yield: {
-      type: String,
-      default: "",
-    },
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    color: {
-      type: String,
-      default: "accent custom-transparent"
-    },
-  },
-  setup(props) {
+interface Props {
+  yieldQuantity?: number;
+  yieldText?: string;
+  scale?: number;
+  color?: string;
+}
+const props = withDefaults(defineProps<Props>(), {
+  yieldQuantity: 0,
+  yieldText: "",
+  scale: 1,
+  color: "accent custom-transparent",
+});
 
-    function sanitizeHTML(rawHtml: string) {
-      return DOMPurify.sanitize(rawHtml, {
-        USE_PROFILES: { html: true },
-        ALLOWED_TAGS: ["strong", "sup"],
-      });
-    }
+function sanitizeHTML(rawHtml: string) {
+  return DOMPurify.sanitize(rawHtml, {
+    USE_PROFILES: { html: true },
+    ALLOWED_TAGS: ["strong", "sup"],
+  });
+}
 
-    const scaledAmount = computed(() => {
-      const {scaledAmountDisplay} =  useScaledAmount(props.yieldQuantity, props.scale);
-      return scaledAmountDisplay;
-    });
-    const text = sanitizeHTML(props.yield);
+const yieldDisplay = computed<string>(() => {
+  const components: string[] = [];
 
-    return {
-      scaledAmount,
-      text,
-    };
-  },
+  const { scaledAmountDisplay } = useScaledAmount(props.yieldQuantity, props.scale);
+  if (scaledAmountDisplay) {
+    components.push(scaledAmountDisplay);
+  }
+
+  const text = props.yieldText;
+  if (text) {
+    components.push(text);
+  }
+
+  return sanitizeHTML(components.join(" "));
 });
 </script>

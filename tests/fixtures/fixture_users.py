@@ -76,7 +76,7 @@ def h2_user(session: Session, admin_token, api_client: TestClient, unique_user: 
         "admin": False,
         "tokens": [],
     }
-    response = api_client.post(api_routes.users, json=user_data, headers=admin_token)
+    response = api_client.post(api_routes.admin_users, json=user_data, headers=admin_token)
     assert response.status_code == 201
 
     # Log in as this user
@@ -135,7 +135,7 @@ def g2_user(session: Session, admin_token, api_client: TestClient):
     }
 
     api_client.post(api_routes.admin_groups, json={"name": group}, headers=admin_token)
-    response = api_client.post(api_routes.users, json=create_data, headers=admin_token)
+    response = api_client.post(api_routes.admin_users, json=create_data, headers=admin_token)
 
     assert response.status_code == 201
 
@@ -227,6 +227,13 @@ def unique_user(session: Session, api_client: TestClient):
 
 
 @fixture(scope="module")
+def unique_admin(session: Session, api_client: TestClient, unique_user: utils.TestUser):
+    admin_user = next(_unique_user(session, api_client))
+    admin_user.repos.users.patch(admin_user.user_id, {"admin": True, "group_id": unique_user.group_id})
+    yield admin_user
+
+
+@fixture(scope="module")
 def user_tuple(session: Session, admin_token, api_client: TestClient) -> Generator[list[utils.TestUser], None, None]:
     group_name = utils.random_string()
 
@@ -258,7 +265,7 @@ def user_tuple(session: Session, admin_token, api_client: TestClient) -> Generat
     users_out = []
 
     for usr in [create_data_1, create_data_2]:
-        response = api_client.post(api_routes.users, json=usr, headers=admin_token)
+        response = api_client.post(api_routes.admin_users, json=usr, headers=admin_token)
         assert response.status_code == 201
 
         # Log in as this user
@@ -312,7 +319,7 @@ def user_token(admin_token, api_client: TestClient):
         "tokens": [],
     }
 
-    response = api_client.post(api_routes.users, json=create_data, headers=admin_token)
+    response = api_client.post(api_routes.admin_users, json=create_data, headers=admin_token)
 
     assert response.status_code == 201
 

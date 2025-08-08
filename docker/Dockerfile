@@ -1,7 +1,7 @@
 ###############################################
 # Frontend Build
 ###############################################
-FROM node:16 AS frontend-builder
+FROM node:20 AS frontend-builder
 
 WORKDIR /frontend
 
@@ -20,7 +20,7 @@ RUN yarn generate
 ###############################################
 # Base Image - Python
 ###############################################
-FROM python:3.12-slim as python-base
+FROM python:3.12-slim AS python-base
 
 ENV MEALIE_HOME="/app"
 
@@ -119,7 +119,7 @@ RUN . $VENV_PATH/bin/activate \
 ###############################################
 # Production Image
 ###############################################
-FROM python-base as production
+FROM python-base AS production
 LABEL org.opencontainers.image.source="https://github.com/mealie-recipes/mealie"
 ENV PRODUCTION=true
 ENV TESTING=false
@@ -140,6 +140,11 @@ RUN mkdir -p /run/secrets
 
 # Copy venv into image. It contains a fully-installed mealie backend and frontend.
 COPY --from=venv-builder $VENV_PATH $VENV_PATH
+
+# install nltk data for the ingredient parser
+ENV NLTK_DATA="/nltk_data/"
+RUN mkdir -p $NLTK_DATA
+RUN python -m nltk.downloader -d $NLTK_DATA averaged_perceptron_tagger_eng
 
 VOLUME [ "$MEALIE_HOME/data/" ]
 ENV APP_PORT=9000

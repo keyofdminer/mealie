@@ -16,6 +16,7 @@
 | API_DOCS                      |         True          | Turns on/off access to the API documentation locally                                               |
 | TZ                            |          UTC          | Must be set to get correct date/time on the server                                                 |
 | ALLOW_SIGNUP<super>\*</super> |         false         | Allow user sign-up without token                                                                   |
+| ALLOW_PASSWORD_LOGIN          |         true          | Whether or not to display the username+password input fields. Keep set to true unless you use OIDC authentication |
 | LOG_CONFIG_OVERRIDE           |                       | Override the config for logging with a custom path                                                 |
 | LOG_LEVEL                     |         info          | Logging level (e.g. critical, error, warning, info, debug)                                         |
 | DAILY_SCHEDULE_TIME           |         23:45         | The time of day to run daily server tasks, in HH:MM format. Use the server's local time, *not* UTC |
@@ -108,7 +109,9 @@ For usage, see [Usage - OpenID Connect](../authentication/oidc-v2.md)
 | OIDC_REMEMBER_ME                                                                    |  False  | Because redirects bypass the login screen, you cant extend your session by clicking the "Remember Me" checkbox. By setting this value to true, a session will be extended as if "Remember Me" was checked                                                                                              |
 | OIDC_SIGNING_ALGORITHM                                                              |  RS256  | The algorithm used to sign the id token (examples: RS256, HS256)                                                                                                                                                                                                                                       |
 | OIDC_USER_CLAIM                                                                     |  email  | This is the claim which Mealie will use to look up an existing user by (e.g. "email", "preferred_username")                                                                                                                                                                                            |
+| OIDC_NAME_CLAIM                                                                     |  name   | This is the claim which Mealie will use for the users Full Name                                                                                                                                                                                                                                        |
 | OIDC_GROUPS_CLAIM                                                                   | groups  | Optional if not using `OIDC_USER_GROUP` or `OIDC_ADMIN_GROUP`. This is the claim Mealie will request from your IdP and will use to compare to `OIDC_USER_GROUP` or `OIDC_ADMIN_GROUP` to allow the user to log in to Mealie or is set as an admin. **Your IdP must be configured to grant this claim** |
+| OIDC_SCOPES_OVERRIDE                                                                |  None   | Advanced configuration used to override the scopes requested from the IdP. **Most users won't need to change this**. At a minimum, 'openid profile email' are required.                                                                                                                                |
 | OIDC_TLS_CACERTFILE                                                                 |  None   | File path to Certificate Authority used to verify server certificate (e.g. `/path/to/ca.crt`)                                                                                                                                                                                                          |
 
 ### OpenAI
@@ -118,13 +121,17 @@ For usage, see [Usage - OpenID Connect](../authentication/oidc-v2.md)
 Mealie supports various integrations using OpenAI. For more information, check out our [OpenAI documentation](./open-ai.md).
 For custom mapping variables (e.g. OPENAI_CUSTOM_HEADERS) you should pass values as JSON encoded strings (e.g. `OPENAI_CUSTOM_PARAMS='{"k1": "v1", "k2": "v2"}'`)
 
-| Variables                                         | Default | Description                                                                                                            |
-| ------------------------------------------------- | :-----: | ---------------------------------------------------------------------------------------------------------------------- |
-| OPENAI_BASE_URL<super>[&dagger;][secrets]</super> |  None   | The base URL for the OpenAI API. If you're not sure, leave this empty to use the standard OpenAI platform              |
-| OPENAI_API_KEY<super>[&dagger;][secrets]</super>  |  None   | Your OpenAI API Key. Enables OpenAI-related features                                                                   |
-| OPENAI_MODEL                                      | gpt-4o  | Which OpenAI model to use. If you're not sure, leave this empty                                                        |
-| OPENAI_WORKERS                                    |    2    | Number of OpenAI workers per request. Higher values may increase processing speed, but will incur additional API costs |
-| OPENAI_SEND_DATABASE_DATA                         |  True   | Whether to send Mealie data to OpenAI to improve request accuracy. This will incur additional API costs                |
+| Variables                                         | Default | Description                                                                                                                                                                  |
+| ------------------------------------------------- | :-----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OPENAI_BASE_URL<super>[&dagger;][secrets]</super> |  None   | The base URL for the OpenAI API. If you're not sure, leave this empty to use the standard OpenAI platform                                                                    |
+| OPENAI_API_KEY<super>[&dagger;][secrets]</super>  |  None   | Your OpenAI API Key. Enables OpenAI-related features                                                                                                                         |
+| OPENAI_MODEL                                      | gpt-4o  | Which OpenAI model to use. If you're not sure, leave this empty                                                                                                              |
+| OPENAI_CUSTOM_HEADERS                             |  None   | Custom HTTP headers to add to all OpenAI requests. This should generally be left empty unless your custom service requires them                                              |
+| OPENAI_CUSTOM_PARAMS                              |  None   | Custom HTTP query params to add to all OpenAI requests. This should generally be left empty unless your custom service requires them                                         |
+| OPENAI_ENABLE_IMAGE_SERVICES                      |  True   | Whether to enable OpenAI image services, such as creating recipes via image. Leave this enabled unless your custom model doesn't support it, or you want to reduce costs     |
+| OPENAI_WORKERS                                    |    2    | Number of OpenAI workers per request. Higher values may increase processing speed, but will incur additional API costs                                                       |
+| OPENAI_SEND_DATABASE_DATA                         |  True   | Whether to send Mealie data to OpenAI to improve request accuracy. This will incur additional API costs                                                                      |
+| OPENAI_REQUEST_TIMEOUT                            |   60    | The number of seconds to wait for an OpenAI request to complete before cancelling the request. Leave this empty unless you're running into timeout issues on slower hardware |
 
 ### Theming
 
@@ -146,8 +153,6 @@ Setting the following environmental variables will change the theme of the front
 | THEME_DARK_INFO       | #1976D2 | Dark Theme Config Variable  |
 | THEME_DARK_WARNING    | #FF6D00 | Dark Theme Config Variable  |
 | THEME_DARK_ERROR      | #EF5350 | Dark Theme Config Variable  |
-
-### Docker Secrets
 
 ### Docker Secrets
 

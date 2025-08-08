@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 /**
 /* This file was automatically generated from pydantic models by running pydantic2ts.
 /* Do not modify it by hand - just update the pydantic models and then re-run the script
@@ -10,6 +10,7 @@ export interface AdminAboutInfo {
   version: string;
   demoStatus: boolean;
   allowSignup: boolean;
+  allowPasswordLogin: boolean;
   defaultGroupSlug?: string | null;
   defaultHouseholdSlug?: string | null;
   enableOidc: boolean;
@@ -41,6 +42,7 @@ export interface AppInfo {
   version: string;
   demoStatus: boolean;
   allowSignup: boolean;
+  allowPasswordLogin: boolean;
   defaultGroupSlug?: string | null;
   defaultHouseholdSlug?: string | null;
   enableOidc: boolean;
