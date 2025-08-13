@@ -2,41 +2,15 @@ import os
 import re
 import tempfile
 import zipfile
-from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
 from mealie.schema.recipe.recipe_ingredient import RecipeIngredient, SaveIngredientFood, SaveIngredientUnit
 from mealie.services.parser_services._base import DataMatcher
+from mealie.services.parser_services.parser_utils.string_utils import extract_quantity_from_string
 
 from ._migration_base import BaseMigrator
-from .utils.migration_helpers import import_image
-
-
-def _format_time(minutes: int) -> str:
-    """Formats time from minutes to a human-readable string."""
-    hours, minutes = divmod(minutes, 60)
-    parts = []
-    if hours:
-        parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
-    if minutes:
-        parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
-    return " ".join(parts)
-
-
-def convert_to_float(value):
-    """Converts a string to float. String can include fractions and mixed fractions."""
-    try:
-        value = value.strip()  # Remove any surrounding spaces
-        if value == "":
-            value = "1"
-        if " " in value:  # Check for mixed fractions like "1 1/2"
-            # Split into whole number and fraction
-            whole, fraction = value.split(" ", 1)
-            return float(whole) + float(Fraction(fraction))
-        return float(Fraction(value))  # Convert fraction or whole number
-    except (ValueError, ZeroDivisionError):
-        return 1.0  # Return 1.0 for invalid values
+from .utils.migration_helpers import _format_time, import_image
 
 
 class DSVParser:
@@ -45,7 +19,7 @@ class DSVParser:
         self.tables: dict[str, list[dict[str, Any]]] = {}
         self.load_files()
 
-    def load_files(self):
+    def load_files(self) -> None:
         """Loads all .dsv files from the directory into lists of dictionaries."""
         for file in self.directory.glob("*.dsv"):
             with open(file, "rb") as f:
@@ -66,7 +40,7 @@ class DSVParser:
 
             self.tables[file.stem] = data  # Store parsed table
 
-    def query_by_id(self, table_name: str, column_name: str, ids: list, return_first_only=False):
+    def query_by_id(self, table_name: str, column_name: str, ids: list[str]) -> list[dict[str, Any]]:
         """Returns rows from a specified table where column_name matches any of the provided IDs."""
         if table_name not in self.tables:
             raise ValueError(f"Table '{table_name}' not found.")
@@ -76,24 +50,22 @@ class DSVParser:
         if len(results) == 0:
             results.append({})
 
-        if return_first_only and results:
-            return results[0]
         return results
 
-    def get_data(self, row, column):
+    def get_data(self, row: dict[str, Any], column: str) -> Any:
         """Get column data from row. Handles a few bad data cases."""
         data = row.get(column, "")
         if data is None or data == "[null]":
             data = ""
         return data
 
-    def get_table(self, table_name: str):
+    def get_table(self, table_name: str) -> list[dict[str, Any]]:
         """Returns the entire table as a list of dictionaries."""
         if table_name not in self.tables:
             raise ValueError(f"Table '{table_name}' not found.")
         return self.tables[table_name]
 
-    def list_tables(self):
+    def list_tables(self) -> list[str]:
         """Returns a list of available tables."""
         return list(self.tables.keys())
 
@@ -105,7 +77,7 @@ class CooknMigrator(BaseMigrator):
         self.key_aliases = []
         self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
 
-    def _parse_units_table(self, db):
+    def _parse_units_table(self, db: DSVParser):
         """Parses the Cook'n units table and adds missing units to Mealie DB."""
         _units_table = db.get_table("temp_unit")
         for _unit_row in _units_table:
@@ -136,7 +108,7 @@ class CooknMigrator(BaseMigrator):
                 else:
                     self.logger.info("Fuzzy match for unit (%s -> %s)", name, match.name)
 
-    def _parse_foods_table(self, db):
+    def _parse_foods_table(self, db: DSVParser):
         """Parses the Cook'n food table and adds missing foods to Mealie DB."""
         _foods_table = db.get_table("temp_food")
         for _food_row in _foods_table:
@@ -162,11 +134,11 @@ class CooknMigrator(BaseMigrator):
                 else:
                     self.logger.info("Fuzzy match for food (%s -> %s)", name, match.name)
 
-    def _parse_media(self, _cookbook_id, _chapter_id, _recipe_id, db):
+    def _parse_media(self, _cookbook_id: str, _chapter_id: str, _recipe_id: str, db: DSVParser) -> str | None:
         """Checks recipe, chapter, and cookbook for images. Return path to most specific available image."""
-        _media_recipe_row = db.query_by_id("temp_media", "ENTITY_ID", [_recipe_id], return_first_only=True)
-        _media_chapter_row = db.query_by_id("temp_media", "ENTITY_ID", [_chapter_id], return_first_only=True)
-        _media_cookbook_row = db.query_by_id("temp_media", "ENTITY_ID", [_cookbook_id], return_first_only=True)
+        _media_recipe_row = db.query_by_id("temp_media", "ENTITY_ID", [_recipe_id])[0]
+        _media_chapter_row = db.query_by_id("temp_media", "ENTITY_ID", [_chapter_id])[0]
+        _media_cookbook_row = db.query_by_id("temp_media", "ENTITY_ID", [_cookbook_id])[0]
 
         # Get recipe image
         _media_row = _media_recipe_row
@@ -199,20 +171,20 @@ class CooknMigrator(BaseMigrator):
                 return os.path.join(db.directory, str(_media_id))
         return None
 
-    def _parse_ingrediants(self, _recipe_id, db):
+    def _parse_ingrediants(self, _recipe_id: str, db: DSVParser) -> list[RecipeIngredient]:
         """Parses ingrediants for recipe from Cook'n ingrediants table."""
         ingredients = []
         ingrediants_order = []
         _ingrediant_rows = db.query_by_id("temp_ingredient", "PARENT_ID", [_recipe_id])
         for _ingrediant_row in _ingrediant_rows:
             _unit_id = db.get_data(_ingrediant_row, "AMOUNT_UNIT")
-            _unit_row = db.query_by_id("temp_unit", "ID", [_unit_id], return_first_only=True)
+            _unit_row = db.query_by_id("temp_unit", "ID", [_unit_id])[0]
             _food_id = db.get_data(_ingrediant_row, "INGREDIENT_FOOD_ID")
-            _food_row = db.query_by_id("temp_food", "ID", [_food_id], return_first_only=True)
+            _food_row = db.query_by_id("temp_food", "ID", [_food_id])[0]
             _brand_id = db.get_data(_ingrediant_row, "BRAND_ID")
-            _brand_row = db.query_by_id("temp_brand", "ID", [_brand_id], return_first_only=True)
+            _brand_row = db.query_by_id("temp_brand", "ID", [_brand_id])[0]
 
-            amount = convert_to_float(db.get_data(_ingrediant_row, "AMOUNT_QTY_STRING"))
+            amount = extract_quantity_from_string(db.get_data(_ingrediant_row, "AMOUNT_QTY_STRING"))
             unit_name = db.get_data(_unit_row, "NAME")
             food_name = db.get_data(_food_row, "NAME")
 
@@ -308,18 +280,20 @@ class CooknMigrator(BaseMigrator):
 
         return steps
 
-    def _process_recipe_document(self, _recipe_row, db) -> dict:
+    def _process_recipe_document(
+        self, _recipe_row: dict[str, Any], db: DSVParser
+    ) -> dict[str, str | list[str] | list[RecipeIngredient]]:
         """Parses recipe row from the Cook'n recipe table."""
-        recipe_data: dict[str, str | list[str | RecipeIngredient]] = {}
+        recipe_data: dict[str, str | list[str] | list[RecipeIngredient]] = {}
 
         # Select db values
         _recipe_id = db.get_data(_recipe_row, "ID")
-        _recipe_desc_row = db.query_by_id("temp_recipe_desc", "ID", [_recipe_id], return_first_only=True)
+        _recipe_desc_row = db.query_by_id("temp_recipe_desc", "ID", [_recipe_id])[0]
         _chapter_id = db.get_data(_recipe_desc_row, "PARENT")
-        _chapter_row = db.query_by_id("temp_chapter_desc", "ID", [_chapter_id], return_first_only=True)
+        _chapter_row = db.query_by_id("temp_chapter_desc", "ID", [_chapter_id])[0]
         _cookbook_id = db.get_data(_chapter_row, "PARENT")
-        _cookbook_row = db.query_by_id("temp_cookBook_desc", "ID", [_cookbook_id], return_first_only=True)
-        _media_row = db.query_by_id("temp_media", "ENTITY_ID", [_recipe_id], return_first_only=True)
+        _cookbook_row = db.query_by_id("temp_cookBook_desc", "ID", [_cookbook_id])[0]
+        _media_row = db.query_by_id("temp_media", "ENTITY_ID", [_recipe_id])[0]
 
         # Parse general recipe info
         cookbook = db.get_data(_cookbook_row, "TITLE")
@@ -341,7 +315,7 @@ class CooknMigrator(BaseMigrator):
 
         # Parse image file
         image_path = self._parse_media(_cookbook_id, _chapter_id, _recipe_id, db)
-        if import_image is not None:
+        if image_path is not None:
             recipe_data["image"] = [image_path]
 
         # Parse ingrediants
@@ -352,7 +326,7 @@ class CooknMigrator(BaseMigrator):
 
         return recipe_data
 
-    def _process_cookbook(self, path):
+    def _process_cookbook(self, path: Path) -> None:
         """Processes contents of a zip file."""
         source_dir = self.get_zip_base_path(path)
         db = DSVParser(source_dir)
@@ -379,16 +353,19 @@ class CooknMigrator(BaseMigrator):
         recipe_lookup = {r.slug: r for r in recipes}
         for slug, recipe_id, status in results:
             if status:
-                r = recipe_lookup.get(slug)
-                if r:
-                    if r.image:
-                        import_image(r.image, recipe_id)
+                recipe = recipe_lookup.get(slug)
+                if recipe:
+                    if recipe.image:
+                        import_image(recipe.image, recipe_id)
                 else:
                     index_len = len(slug.split("-")[-1])
-                    r = recipe_lookup.get(slug[: -(index_len + 1)])
-                    self.logger.warning("Duplicate recipe (%s) found! Saved as copy...", r.name)
-                    if r.image:
-                        import_image(r.image, recipe_id)
+                    recipe = recipe_lookup.get(slug[: -(index_len + 1)])
+                    if recipe:
+                        self.logger.warning("Duplicate recipe (%s) found! Saved as copy...", recipe.name)
+                        if recipe.image:
+                            import_image(recipe.image, recipe_id)
+                    else:
+                        self.logger.warning("Failed to lookup recipe! (%s)", slug)
 
     def _migrate(self) -> None:
         """Migrates recipes from Cook'n cookboop .zip. Also will handle a .zip folder of .zip folders"""
