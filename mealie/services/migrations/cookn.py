@@ -10,7 +10,7 @@ from mealie.services.parser_services._base import DataMatcher
 from mealie.services.parser_services.parser_utils.string_utils import extract_quantity_from_string
 
 from ._migration_base import BaseMigrator
-from .utils.migration_helpers import format_time, import_image
+from .utils.migration_helpers import format_time
 
 
 class DSVParser:
@@ -356,14 +356,14 @@ class CooknMigrator(BaseMigrator):
                 recipe = recipe_lookup.get(slug)
                 if recipe:
                     if recipe.image:
-                        import_image(recipe.image, recipe_id)
+                        self.import_image(slug, recipe.image, recipe_id)
                 else:
                     index_len = len(slug.split("-")[-1])
                     recipe = recipe_lookup.get(slug[: -(index_len + 1)])
                     if recipe:
                         self.logger.warning("Duplicate recipe (%s) found! Saved as copy...", recipe.name)
                         if recipe.image:
-                            import_image(recipe.image, recipe_id)
+                            self.import_image(slug, recipe.image, recipe_id)
                     else:
                         self.logger.warning("Failed to lookup recipe! (%s)", slug)
 
