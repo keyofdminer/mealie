@@ -10,7 +10,7 @@ from mealie.schema.reports.reports import ReportEntryCreate
 
 from ._migration_base import BaseMigrator
 from .utils.migration_alias import MigrationAlias
-from .utils.migration_helpers import format_time, import_image
+from .utils.migration_helpers import format_time
 
 
 def _build_ingredient_from_ingredient_data(ingredient_data: dict[str, Any], title: str | None = None) -> dict[str, Any]:
@@ -132,4 +132,4 @@ class TandoorMigrator(BaseMigrator):
                     except StopIteration:
                         continue
 
-                    import_image(r.image, recipe_id)
+                    self.import_image(slug, r.image, recipe_id)
