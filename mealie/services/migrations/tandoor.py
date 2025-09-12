@@ -10,7 +10,7 @@ from mealie.schema.reports.reports import ReportEntryCreate
 
 from ._migration_base import BaseMigrator
 from .utils.migration_alias import MigrationAlias
-from .utils.migration_helpers import _format_time, import_image
+from .utils.migration_helpers import format_time, import_image
 
 
 def _build_ingredient_from_ingredient_data(ingredient_data: dict[str, Any], title: str | None = None) -> dict[str, Any]:
@@ -51,7 +51,7 @@ def parse_times(working_time: int, waiting_time: int) -> tuple[str, str]:
     """Returns the performTime and totalTime"""
 
     total_time = working_time + waiting_time
-    return _format_time(working_time), _format_time(total_time)
+    return format_time(working_time), format_time(total_time)
 
 
 class TandoorMigrator(BaseMigrator):

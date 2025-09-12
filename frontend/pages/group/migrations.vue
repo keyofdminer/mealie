@@ -110,7 +110,7 @@ const MIGRATIONS = {
   plantoeat: "plantoeat",
   recipekeeper: "recipekeeper",
   tandoor: "tandoor",
-  cookn: "cookn"
+  cookn: "cookn",
 };
 
 export default defineNuxtComponent({
@@ -173,7 +173,7 @@ export default defineNuxtComponent({
         value: MIGRATIONS.tandoor,
       },
       {
-        text: i18n.tc("migration.cookn.title"),
+        text: i18n.t("migration.cookn.title"),
         value: MIGRATIONS.cookn,
       },
     ];
@@ -410,7 +410,7 @@ export default defineNuxtComponent({
         ],
       },
       [MIGRATIONS.cookn]: {
-        text: i18n.tc("migration.cookn.description-long"),
+        text: i18n.t("migration.cookn.description-long"),
         acceptedFileType: ".zip",
         tree: [
           {
@@ -426,7 +426,7 @@ export default defineNuxtComponent({
               { id: 7, name: "temp_food_brand.dsv", icon: $globals.icons.codeJson },
               { id: 8, name: "temp_food_group.dsv", icon: $globals.icons.codeJson },
               { id: 9, name: "temp_food.dsv", icon: $globals.icons.codeJson },
-              { id: 10, name: "temp_ingrediant.dsv", icon: $globals.icons.codeJson },
+              { id: 10, name: "temp_ingredient.dsv", icon: $globals.icons.codeJson },
               { id: 11, name: "temp_media.dsv", icon: $globals.icons.codeJson },
               { id: 12, name: "temp_nutrient.dsv", icon: $globals.icons.codeJson },
               { id: 13, name: "temp_recipe_desc.dsv", icon: $globals.icons.codeJson },
@@ -434,8 +434,8 @@ export default defineNuxtComponent({
               { id: 13, name: "temp_unit_equivalent.dsv", icon: $globals.icons.codeJson },
               { id: 13, name: "temp_unit.dsv", icon: $globals.icons.codeJson },
               { id: 13, name: "images", icon: $globals.icons.fileImage },
-            ]
-          }
+            ],
+          },
         ],
       },
     };

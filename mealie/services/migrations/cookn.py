@@ -10,7 +10,7 @@ from mealie.services.parser_services._base import DataMatcher
 from mealie.services.parser_services.parser_utils.string_utils import extract_quantity_from_string
 
 from ._migration_base import BaseMigrator
-from .utils.migration_helpers import _format_time, import_image
+from .utils.migration_helpers import format_time, import_image
 
 
 class DSVParser:
@@ -171,20 +171,20 @@ class CooknMigrator(BaseMigrator):
                 return os.path.join(db.directory, str(_media_id))
         return None
 
-    def _parse_ingrediants(self, _recipe_id: str, db: DSVParser) -> list[RecipeIngredient]:
-        """Parses ingrediants for recipe from Cook'n ingrediants table."""
+    def _parse_ingredients(self, _recipe_id: str, db: DSVParser) -> list[RecipeIngredient]:
+        """Parses ingredients for recipe from Cook'n ingredients table."""
         ingredients = []
-        ingrediants_order = []
-        _ingrediant_rows = db.query_by_id("temp_ingredient", "PARENT_ID", [_recipe_id])
-        for _ingrediant_row in _ingrediant_rows:
-            _unit_id = db.get_data(_ingrediant_row, "AMOUNT_UNIT")
+        ingredients_order = []
+        _ingredient_rows = db.query_by_id("temp_ingredient", "PARENT_ID", [_recipe_id])
+        for _ingredient_row in _ingredient_rows:
+            _unit_id = db.get_data(_ingredient_row, "AMOUNT_UNIT")
             _unit_row = db.query_by_id("temp_unit", "ID", [_unit_id])[0]
-            _food_id = db.get_data(_ingrediant_row, "INGREDIENT_FOOD_ID")
+            _food_id = db.get_data(_ingredient_row, "INGREDIENT_FOOD_ID")
             _food_row = db.query_by_id("temp_food", "ID", [_food_id])[0]
-            _brand_id = db.get_data(_ingrediant_row, "BRAND_ID")
+            _brand_id = db.get_data(_ingredient_row, "BRAND_ID")
             _brand_row = db.query_by_id("temp_brand", "ID", [_brand_id])[0]
 
-            amount = extract_quantity_from_string(db.get_data(_ingrediant_row, "AMOUNT_QTY_STRING"))
+            amount = extract_quantity_from_string(db.get_data(_ingredient_row, "AMOUNT_QTY_STRING"))
             unit_name = db.get_data(_unit_row, "NAME")
             food_name = db.get_data(_food_row, "NAME")
 
@@ -196,8 +196,8 @@ class CooknMigrator(BaseMigrator):
             if food == "":
                 food = None
 
-            pre_qualifier = db.get_data(_ingrediant_row, "PRE_QUALIFIER").lstrip().rstrip()
-            post_qualifier = db.get_data(_ingrediant_row, "POST_QUALIFIER").lstrip().rstrip()
+            pre_qualifier = db.get_data(_ingredient_row, "PRE_QUALIFIER").lstrip().rstrip()
+            post_qualifier = db.get_data(_ingredient_row, "POST_QUALIFIER").lstrip().rstrip()
             brand = db.get_data(_brand_row, "NAME")
 
             # Combine pre-qualifier and post-qualifier into single note
@@ -224,13 +224,13 @@ class CooknMigrator(BaseMigrator):
                 disable_amount=False,
             )
             try:
-                _display_order = db.get_data(_ingrediant_row, "DISPLAY_ORDER")
-                ingrediants_order.append(int(_display_order))
+                _display_order = db.get_data(_ingredient_row, "DISPLAY_ORDER")
+                ingredients_order.append(int(_display_order))
                 ingredients.append(base_ingredient)
             except ValueError:
                 self.logger.warning("Invalid ingrediant order: %s, %s", _display_order, base_ingredient.original_text)
                 continue
-        return [obj for _, obj in sorted(zip(ingrediants_order, ingredients, strict=False))]
+        return [obj for _, obj in sorted(zip(ingredients_order, ingredients, strict=False))]
 
     def _parse_instructions(self, instructions: str) -> list[str]:
         """
@@ -309,17 +309,17 @@ class CooknMigrator(BaseMigrator):
         recipe_data["name"] = name
         recipe_data["description"] = description
         recipe_data["recipeYield"] = serves
-        recipe_data["prepTime"] = _format_time(prep_time)
-        recipe_data["performTime"] = _format_time(cook_time)
-        recipe_data["totalTime"] = _format_time(prep_time + cook_time)
+        recipe_data["prepTime"] = format_time(prep_time)
+        recipe_data["performTime"] = format_time(cook_time)
+        recipe_data["totalTime"] = format_time(prep_time + cook_time)
 
         # Parse image file
         image_path = self._parse_media(_cookbook_id, _chapter_id, _recipe_id, db)
         if image_path is not None:
             recipe_data["image"] = [image_path]
 
-        # Parse ingrediants
-        recipe_data["ingrediants"] = self._parse_ingrediants(_recipe_id, db)
+        # Parse ingredients
+        recipe_data["ingredients"] = self._parse_ingredients(_recipe_id, db)
 
         # Parse instructions
         recipe_data["recipeInstructions"] = self._parse_instructions(db.get_data(_recipe_row, "INSTRUCTIONS"))
@@ -342,10 +342,10 @@ class CooknMigrator(BaseMigrator):
 
         recipes = []
         for r in recipes_as_dicts:
-            # Clean recipes and re-add ingrediant w/ amounts
-            ingrediants = r["ingrediants"]
+            # Clean recipes and re-add ingredient w/ amounts
+            ingredients = r["ingredients"]
             r = self.clean_recipe_dictionary(r)
-            r.recipe_ingredient = ingrediants
+            r.recipe_ingredient = ingredients
             recipes.append(r)
 
         # add recipes and images to database

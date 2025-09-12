@@ -179,7 +179,7 @@ def parse_iso8601_duration(time: str | None) -> str:
     return " ".join(return_strings) if return_strings else time
 
 
-def _format_time(minutes: int) -> str:
+def format_time(minutes: int) -> str:
     # TODO: make this translatable
     hour_label = "hour"
     hours_label = "hours"
