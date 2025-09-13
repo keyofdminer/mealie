@@ -81,58 +81,54 @@ class CooknMigrator(BaseMigrator):
         """Parses the Cook'n units table and adds missing units to Mealie DB."""
         _units_table = db.get_table("temp_unit")
         for _unit_row in _units_table:
-            if int(db.get_data(_unit_row, "FREQUENCY")) > 0:
-                name = db.get_data(_unit_row, "NAME")
-                plural_name = db.get_data(_unit_row, "PLURAL_NAME")
-                abbreviation = db.get_data(_unit_row, "ABBREVIATION")
+            name = db.get_data(_unit_row, "NAME")
+            plural_name = db.get_data(_unit_row, "PLURAL_NAME")
+            abbreviation = db.get_data(_unit_row, "ABBREVIATION")
 
-                # exact match
-                if name in self.matcher.units_by_alias:
-                    continue
+            # exact match
+            if name in self.matcher.units_by_alias:
+                continue
 
-                # fuzzy match
-                match = self.matcher.find_unit_match(name)
-                if match is None:
-                    save = SaveIngredientUnit(
-                        group_id=self.group.id,
-                        name=name,
-                        plural_name=plural_name,
-                        abbreviation=abbreviation,
-                    )
-                    # update DataMatcher
-                    self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
-                    try:
-                        self.db.ingredient_units.create(save)
-                    except Exception as e:
-                        self.logger.error(e)
-                else:
-                    self.logger.info("Fuzzy match for unit (%s -> %s)", name, match.name)
+            # fuzzy match
+            match = self.matcher.find_unit_match(name)
+            if match is None:
+                save = SaveIngredientUnit(
+                    group_id=self.group.id,
+                    name=name,
+                    plural_name=plural_name,
+                    abbreviation=abbreviation,
+                )
+                # update DataMatcher
+                self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
+                try:
+                    self.db.ingredient_units.create(save)
+                except Exception as e:
+                    self.logger.error(e)
+            else:
+                self.logger.info("Fuzzy match for unit (%s -> %s)", name, match.name)
 
     def _parse_foods_table(self, db: DSVParser):
         """Parses the Cook'n food table and adds missing foods to Mealie DB."""
         _foods_table = db.get_table("temp_food")
         for _food_row in _foods_table:
-            if int(db.get_data(_food_row, "FREQUENCY")) > 0:
-                name = db.get_data(_food_row, "NAME")
-                plural_name = db.get_data(_food_row, "PLURAL_NAME")
+            name = db.get_data(_food_row, "NAME")
+            plural_name = db.get_data(_food_row, "PLURAL_NAME")
 
-                # exact match
-                if name in self.matcher.foods_by_alias:
-                    continue
+            # exact match
+            if name in self.matcher.foods_by_alias:
+                continue
 
-                match = self.matcher.find_food_match(name)
-                if match is None:
-                    save = SaveIngredientFood(
-                        group_id=self.group.id, name=name, plural_name=plural_name, description=""
-                    )
-                    # update DataMatcher
-                    self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
-                    try:
-                        self.db.ingredient_foods.create(save)
-                    except Exception as e:
-                        self.logger.error(e)
-                else:
-                    self.logger.info("Fuzzy match for food (%s -> %s)", name, match.name)
+            match = self.matcher.find_food_match(name)
+            if match is None:
+                save = SaveIngredientFood(group_id=self.group.id, name=name, plural_name=plural_name, description="")
+                # update DataMatcher
+                self.matcher = DataMatcher(self.db, food_fuzzy_match_threshold=95, unit_fuzzy_match_threshold=100)
+                try:
+                    self.db.ingredient_foods.create(save)
+                except Exception as e:
+                    self.logger.error(e)
+            else:
+                self.logger.info("Fuzzy match for food (%s -> %s)", name, match.name)
 
     def _parse_media(self, _cookbook_id: str, _chapter_id: str, _recipe_id: str, db: DSVParser) -> str | None:
         """Checks recipe, chapter, and cookbook for images. Return path to most specific available image."""
@@ -184,7 +180,11 @@ class CooknMigrator(BaseMigrator):
             _brand_id = db.get_data(_ingredient_row, "BRAND_ID")
             _brand_row = db.query_by_id("temp_brand", "ID", [_brand_id])[0]
 
-            amount = extract_quantity_from_string(db.get_data(_ingredient_row, "AMOUNT_QTY_STRING"))
+            amount_str = None
+            amount, _ = extract_quantity_from_string(db.get_data(_ingredient_row, "AMOUNT_QTY_STRING"))
+            if amount == 0:
+                amount = None
+                amount_str = db.get_data(_ingredient_row, "AMOUNT_QTY_STRING")
             unit_name = db.get_data(_unit_row, "NAME")
             food_name = db.get_data(_food_row, "NAME")
 
@@ -215,12 +215,35 @@ class CooknMigrator(BaseMigrator):
                     post_qualifier = post_qualifier[1:].lstrip()
                 note += post_qualifier
 
+            # Remove empty lines (unless amount was a text input)
+            if amount is None and unit is None and food is None and note == "":
+                self.logger.info(f"{amount_str}, {type(amount_str)}")
+                if amount_str is not None and amount_str != "0":
+                    note = amount_str
+                else:
+                    continue
+
+            og_text = ""
+            amount_str = db.get_data(_ingredient_row, "AMOUNT_QTY_STRING")
+            if amount_str != "0":
+                og_text += amount_str + " "
+            if unit_name is not None:
+                og_text += unit_name + " "
+            if pre_qualifier is not None:
+                og_text += pre_qualifier + " "
+            if food_name is not None:
+                og_text += food_name + " "
+            if post_qualifier is not None:
+                og_text += post_qualifier + " "
+            if brand is not None:
+                og_text += brand
+
             base_ingredient = RecipeIngredient(
                 quantity=amount,
                 unit=unit,
                 food=food,
                 note=note,
-                original_text=f"{amount} {unit_name} {pre_qualifier} {food_name} {post_qualifier} {brand}",
+                original_text=og_text,
                 disable_amount=False,
             )
             try:
