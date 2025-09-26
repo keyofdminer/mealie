@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from mealie.schema.recipe.recipe_ingredient import RecipeIngredient, SaveIngredientFood, SaveIngredientUnit
+from mealie.schema.reports.reports import ReportEntryCreate
 from mealie.services.parser_services._base import DataMatcher
 from mealie.services.parser_services.parser_utils.string_utils import extract_quantity_from_string
 
@@ -86,7 +87,7 @@ class CooknMigrator(BaseMigrator):
             abbreviation = db.get_data(_unit_row, "ABBREVIATION")
 
             # exact match
-            if name in self.matcher.units_by_alias:
+            if name in self.matcher.units_by_alias or name == "":
                 continue
 
             # fuzzy match
@@ -105,7 +106,7 @@ class CooknMigrator(BaseMigrator):
                 except Exception as e:
                     self.logger.error(e)
             else:
-                self.logger.info("Fuzzy match for unit (%s -> %s)", name, match.name)
+                self.logger.debug("Fuzzy match for unit (%s -> %s)", name, match.name)
 
     def _parse_foods_table(self, db: DSVParser):
         """Parses the Cook'n food table and adds missing foods to Mealie DB."""
@@ -115,7 +116,7 @@ class CooknMigrator(BaseMigrator):
             plural_name = db.get_data(_food_row, "PLURAL_NAME")
 
             # exact match
-            if name in self.matcher.foods_by_alias:
+            if name in self.matcher.foods_by_alias or name == "":
                 continue
 
             match = self.matcher.find_food_match(name)
@@ -128,7 +129,7 @@ class CooknMigrator(BaseMigrator):
                 except Exception as e:
                     self.logger.error(e)
             else:
-                self.logger.info("Fuzzy match for food (%s -> %s)", name, match.name)
+                self.logger.debug("Fuzzy match for food (%s -> %s)", name, match.name)
 
     def _parse_media(self, _cookbook_id: str, _chapter_id: str, _recipe_id: str, db: DSVParser) -> str | None:
         """Checks recipe, chapter, and cookbook for images. Return path to most specific available image."""
@@ -217,7 +218,7 @@ class CooknMigrator(BaseMigrator):
 
             # Remove empty lines (unless amount was a text input)
             if amount is None and unit is None and food is None and note == "":
-                self.logger.info(f"{amount_str}, {type(amount_str)}")
+                self.logger.debug("%s, %s", amount_str, type(amount_str))
                 if amount_str is not None and amount_str != "0":
                     note = amount_str
                 else:
@@ -251,7 +252,7 @@ class CooknMigrator(BaseMigrator):
                 ingredients_order.append(int(_display_order))
                 ingredients.append(base_ingredient)
             except ValueError:
-                self.logger.warning("Invalid ingrediant order: %s, %s", _display_order, base_ingredient.original_text)
+                self.logger.warning("Invalid ingredient order: %s, %s", _display_order, base_ingredient.original_text)
                 continue
         return [obj for _, obj in sorted(zip(ingredients_order, ingredients, strict=False))]
 
@@ -303,9 +304,7 @@ class CooknMigrator(BaseMigrator):
 
         return steps
 
-    def _process_recipe_document(
-        self, _recipe_row: dict[str, Any], db: DSVParser
-    ) -> dict[str, str | list[str] | list[RecipeIngredient]]:
+    def _process_recipe_document(self, _recipe_row: dict[str, Any], db: DSVParser) -> dict:
         """Parses recipe row from the Cook'n recipe table."""
         recipe_data: dict[str, str | list[str] | list[RecipeIngredient]] = {}
 
@@ -342,7 +341,7 @@ class CooknMigrator(BaseMigrator):
             recipe_data["image"] = [image_path]
 
         # Parse ingredients
-        recipe_data["ingredients"] = self._parse_ingredients(_recipe_id, db)
+        recipe_data["_parsed_ingredients"] = self._parse_ingredients(_recipe_id, db)
 
         # Parse instructions
         recipe_data["recipeInstructions"] = self._parse_instructions(db.get_data(_recipe_row, "INSTRUCTIONS"))
@@ -361,12 +360,26 @@ class CooknMigrator(BaseMigrator):
 
         # Load recipes from cookn
         _recipe_table = db.get_table("temp_recipe")
-        recipes_as_dicts = [self._process_recipe_document(_recipe_row, db) for _recipe_row in _recipe_table]
+
+        recipes_as_dicts = []
+        for _recipe_row in _recipe_table:
+            try:
+                recipes_as_dicts.append(self._process_recipe_document(_recipe_row, db))
+
+            except Exception as e:
+                self.report_entries.append(
+                    ReportEntryCreate(
+                        report_id=self.report_id,
+                        success=False,
+                        message="Failed to parse recipe",
+                        exception=f"{type(e).__name__}: {e}",
+                    )
+                )
 
         recipes = []
         for r in recipes_as_dicts:
             # Clean recipes and re-add ingredient w/ amounts
-            ingredients = r["ingredients"]
+            ingredients = r["_parsed_ingredients"]
             r = self.clean_recipe_dictionary(r)
             r.recipe_ingredient = ingredients
             recipes.append(r)
