@@ -141,7 +141,7 @@ class CooknMigrator(BaseMigrator):
         _media_row = _media_recipe_row
         _media_id = db.get_data(_media_row, "ID")
         if _media_id == "":
-            # Get chaper image if no recipe image
+            # Get chapter image if no recipe image
             _media_row = _media_chapter_row
             _media_id = db.get_data(_media_row, "ID")
         if _media_id == "":
@@ -181,21 +181,14 @@ class CooknMigrator(BaseMigrator):
             _brand_id = db.get_data(_ingredient_row, "BRAND_ID")
             _brand_row = db.query_by_id("temp_brand", "ID", [_brand_id])[0]
 
-            amount_str = None
-            amount, _ = extract_quantity_from_string(db.get_data(_ingredient_row, "AMOUNT_QTY_STRING"))
-            if amount == 0:
-                amount = None
-                amount_str = db.get_data(_ingredient_row, "AMOUNT_QTY_STRING")
+            amount_str = db.get_data(_ingredient_row, "AMOUNT_QTY_STRING")
+            amount, _ = extract_quantity_from_string(amount_str)
             unit_name = db.get_data(_unit_row, "NAME")
             food_name = db.get_data(_food_row, "NAME")
 
             # Match unit and food from Mealie DB
             unit = self.matcher.find_unit_match(unit_name)
-            if unit == "":
-                unit = None
             food = self.matcher.find_food_match(food_name)
-            if food == "":
-                food = None
 
             pre_qualifier = db.get_data(_ingredient_row, "PRE_QUALIFIER").lstrip().rstrip()
             post_qualifier = db.get_data(_ingredient_row, "POST_QUALIFIER").lstrip().rstrip()
@@ -217,26 +210,25 @@ class CooknMigrator(BaseMigrator):
                 note += post_qualifier
 
             # Remove empty lines (unless amount was a text input)
-            if amount is None and unit is None and food is None and note == "":
+            if not amount and not unit and not food and not note:
                 self.logger.debug("%s, %s", amount_str, type(amount_str))
-                if amount_str is not None and amount_str != "0":
+                if amount_str and amount_str != "0":
                     note = amount_str
                 else:
                     continue
 
             og_text = ""
-            amount_str = db.get_data(_ingredient_row, "AMOUNT_QTY_STRING")
             if amount_str != "0":
                 og_text += amount_str + " "
-            if unit_name is not None:
+            if unit_name:
                 og_text += unit_name + " "
-            if pre_qualifier is not None:
+            if pre_qualifier:
                 og_text += pre_qualifier + " "
-            if food_name is not None:
+            if food_name:
                 og_text += food_name + " "
-            if post_qualifier is not None:
+            if post_qualifier:
                 og_text += post_qualifier + " "
-            if brand is not None:
+            if brand:
                 og_text += brand
 
             base_ingredient = RecipeIngredient(
@@ -244,7 +236,7 @@ class CooknMigrator(BaseMigrator):
                 unit=unit,
                 food=food,
                 note=note,
-                original_text=og_text,
+                original_text=og_text.strip(),
                 disable_amount=False,
             )
             try:
@@ -323,9 +315,14 @@ class CooknMigrator(BaseMigrator):
         name = db.get_data(_recipe_desc_row, "TITLE")
         description = db.get_data(_recipe_desc_row, "DESCRIPTION")
         serves = db.get_data(_recipe_row, "SERVES")
-        # yields = db.get_data(_recipe_row, "YIELD")
-        prep_time = int(db.get_data(_recipe_row, "PREPTIME"))
-        cook_time = int(db.get_data(_recipe_row, "COOKTIME"))
+        try:
+            prep_time = int(db.get_data(_recipe_row, "PREPTIME"))
+        except ValueError:
+            prep_time = 0
+        try:
+            cook_time = int(db.get_data(_recipe_row, "COOKTIME"))
+        except ValueError:
+            cook_time = 0
 
         recipe_data["recipeCategory"] = [cookbook + " - " + chapter]
         recipe_data["name"] = name
