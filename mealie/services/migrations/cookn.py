@@ -87,7 +87,7 @@ class CooknMigrator(BaseMigrator):
             abbreviation = db.get_data(_unit_row, "ABBREVIATION")
 
             # exact match
-            if name in self.matcher.units_by_alias or name == "":
+            if not name or name in self.matcher.units_by_alias:
                 continue
 
             # fuzzy match
@@ -116,7 +116,7 @@ class CooknMigrator(BaseMigrator):
             plural_name = db.get_data(_food_row, "PLURAL_NAME")
 
             # exact match
-            if name in self.matcher.foods_by_alias or name == "":
+            if not name or name in self.matcher.foods_by_alias:
                 continue
 
             match = self.matcher.find_food_match(name)
