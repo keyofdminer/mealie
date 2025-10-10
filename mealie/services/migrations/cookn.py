@@ -307,7 +307,6 @@ class CooknMigrator(BaseMigrator):
         _chapter_row = db.query_by_id("temp_chapter_desc", "ID", [_chapter_id])[0]
         _cookbook_id = db.get_data(_chapter_row, "PARENT")
         _cookbook_row = db.query_by_id("temp_cookBook_desc", "ID", [_cookbook_id])[0]
-        _media_row = db.query_by_id("temp_media", "ENTITY_ID", [_recipe_id])[0]
 
         # Parse general recipe info
         cookbook = db.get_data(_cookbook_row, "TITLE")
